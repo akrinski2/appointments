@@ -1,0 +1,168 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <title>Appointment Manager</title>
+     <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
+   
+    
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  
+    <script>
+
+    $( document ).ready(function() {
+        
+       $("#new_button").click( function()
+           {
+                $('#new_button').hide();
+
+                 $('#add_form').show();
+           }
+        );        
+        
+        
+       $("#cancel_button").click( function()
+           {
+                $('#new_button').show();
+
+                $('#add_form').hide();
+           }
+        );        
+                
+       $("#add_button").click( function()
+           {
+            // VALIDATE THE DATE
+            var timestamp = Date.parse($("#datepicker").val()); 
+            
+
+            
+            if (isNaN(timestamp) === true) { 
+                alert('The date must be valid and in the form mm/dd/yyyy');
+                $('#doc_title').val("");
+                
+                return false;
+            }
+            
+            // VALIDATE THE TIME
+            if(!$("#time").val().match(/(1[012]|0[1-9]):[0-5][0-9](\\s)? (am|pm)/)) {
+                
+                alert('The time must be valid and in the dd:dd a/pm');
+                
+                return false;
+            }
+            
+            // VALIDATE THE DESCRIPTION
+            if($("desc").val() === '')
+            {
+                alert('A description needs to be entered');
+                
+                return false;
+            }
+            
+            $( "#add_aap" ).submit();
+           }
+        );
+       
+               
+       $("#search_button").click( function()
+           {
+                $('#appt_table').html("");
+                
+                getAppointments($('#search_txt').val());
+           }    
+        );        
+          
+                 
+        $( function() {
+            
+            var dateToday = new Date(); 
+            $( "#datepicker" ).datepicker({
+                minDate: dateToday
+            });
+        
+        } );        
+            
+        getAppointments();
+        
+        
+        
+    });
+    
+    function getAppointments(search){
+        
+        var ajax_url = 'appointments.cgi?ajax=1';
+    
+        if(search !== undefined){
+            ajax_url = ajax_url + "&search=" + search;
+        }
+        
+        $.ajax(ajax_url, {
+           dataType: 'json',
+           success: function(data) {
+              
+                $('#appt_table').append('<table><th>Date</th><th>Time</th><th>Description</th></table>');
+                var table = $('#appt_table').children();
+                
+                $.each(data, function(i, apptment) {
+                
+                    table.append( '<tr><td>' + apptment[0] + '</td><td>' + apptment[1] + '</td><td>' + apptment[2] + '</td></tr>' );
+
+                });              
+                  
+           },
+           error: function() {
+              alert('An ajax error occurred');
+           }
+        });
+    }
+    
+    
+     </script>
+    </head>
+     
+     
+     
+</head>
+<body><div id="error">__ERR_MESSAGE__</div>
+    <div id="new_button"><input type="button" value="new"></div>
+
+    <div id="add_form" hidden>
+        
+        <form id="add_aap" action="appointments.cgi">
+            <table>
+             <tr>
+                <td><div id="add_button"><input type="button" value="Add"></div></td>
+                <td><div id="cancel_button"><input type="button" value="Cancel"></div></td>
+             </tr>
+            </table>
+            
+            <table>
+             <tr>
+                <td>Date</td>
+                <td><input type="text" name="date" id="datepicker"></td>
+             </tr>
+             <tr>
+                <td>Time</td>
+                <td><input type="text" name="time" id="time"></td>
+             </tr>
+             <tr>
+                <td>Desc</td>
+                <td><input type="text" name="desc" id="desc"></td>
+             </tr>             
+            </table>
+            
+        </form>
+        
+        
+    </div>
+    
+    <br><div id="search"><input id="search_txt" type="text" size="15"> &nbsp; <input id="search_button" type="button" value="Search"></div><br>
+
+    <div id="appt_table">
+        
+    </div>
+</body>
+</html>
